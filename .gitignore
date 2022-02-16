@@ -1,0 +1,7 @@
+# Idea Project
+# 파이참이 기본적으로 파이썬 내부의 설정을 저장하는 곳
+.idea/
+
+# Python
+__pycache__
+# 가상환경이 프로젝트 밖에 있어서, git ignore 하지 않습니다.
