@@ -35,6 +35,7 @@ ALLOWED_HOSTS: List[str] = []
 # Application definition
 
 INSTALLED_APPS = [
+    "tabom.apps.TabomConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -76,7 +77,7 @@ WSGI_APPLICATION = "sparta.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-pymysql.install_as_MySQLdb() # pymysql을 mysql처럼 작동하도록 함
+pymysql.install_as_MySQLdb()  # pymysql을 mysql처럼 작동하도록 함
 
 DATABASES = {
     "default": {
@@ -130,3 +131,9 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# sparta app의 local_settings파일을 로드하되 에러 시 settings파일 쓰도록 함
+try:
+    from sparta.local_settings import *
+except ImportError:
+    pass
