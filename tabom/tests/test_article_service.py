@@ -2,6 +2,7 @@
 from django.test import TestCase
 
 from tabom.models.article import Article
+from tabom.models.like import Like
 from tabom.models.user import User
 from tabom.services.article_service import get_an_article, get_article_list
 from tabom.services.like_service import do_like
@@ -16,7 +17,7 @@ class TestArticleService(TestCase):
         article = Article.objects.create(title=title)
 
         # When
-        result_article = get_an_article(article.id)
+        result_article = get_an_article(0, article.id)  # get_an_article 시 user id 받는데, 여기선 쓰일 곳이 없어서 0으로 함
 
         # Then
         self.assertEqual(article.id, result_article.id)
@@ -28,7 +29,7 @@ class TestArticleService(TestCase):
 
         # Except
         with self.assertRaises(Article.DoesNotExist):
-            get_an_article(invalid_article_id)
+            get_an_article(0, invalid_article_id)  # get_an_article 시 user id 받는데, 여기선 쓰일 곳이 없어서 0으로 함
 
     def test_get_article_list_should_prefetch_like(self) -> None:
         # Given
@@ -49,7 +50,7 @@ class TestArticleService(TestCase):
                 [a.id for a in reversed(articles[10:21])], [a.id for a in result_articles]
             )
 
-    def test_get_article_list_should_contain_my_like_when_like_exists(self) -> None:
+    def test_get_article_list_should_contain_my_likes_when_like_exists(self) -> None:
         # Given
         user = User.objects.create(name="test_user")
         article1 = Article.objects.create(title="article1")
@@ -63,3 +64,18 @@ class TestArticleService(TestCase):
         self.assertEqual(like.id, articles[1].my_likes[0].id)  # like한 id와 articles에 to_attr로 할당한 my_likes 필드에서
         # article1에 내 like의 id가 같은지 검증
         self.assertEqual(0, len(articles[0].my_likes))  # 1번째 article의 내 like가 0과 같은지 검증
+
+    def test_get_article_list_should_not_contain_my_likes_when_user_id_is_zero(self) -> None:
+        # Given
+        user = User.objects.create(name="test_user")
+        article1 = Article.objects.create(title="article1")
+        Like.objects.create(user_id=user.id, article_id=article1.id)
+        Article.objects.create(title="article2")
+        invalid_user_id = 0
+
+        # When
+        articles = get_article_list(invalid_user_id, 0, 10)  # 유효하지 않은 user id로 article 불러올 때
+
+        # Then
+        self.assertEqual(0, len(articles[1].my_likes))  # 내 좋아요 수에 포함되지 않았는지 검증
+        self.assertEqual(0, len(articles[0].my_likes))
