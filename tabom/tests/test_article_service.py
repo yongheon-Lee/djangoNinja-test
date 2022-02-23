@@ -4,8 +4,9 @@ from django.test import TestCase
 from tabom.models.article import Article
 from tabom.models.like import Like
 from tabom.models.user import User
-from tabom.services.article_service import get_an_article, get_article_list
+from tabom.services.article_service import get_an_article, get_article_list, delete_an_article, create_an_article
 from tabom.services.like_service import do_like
+
 
 # from django.test.utils import CaptureQueriesContext
 
@@ -79,3 +80,26 @@ class TestArticleService(TestCase):
         # Then
         self.assertEqual(0, len(articles[1].my_likes))  # 내 좋아요 수에 포함되지 않았는지 검증
         self.assertEqual(0, len(articles[0].my_likes))
+
+    def test_you_can_delete_an_article(self) -> None:
+        # Given
+        user = User.objects.create(name='user1')
+        article = Article.objects.create(title='article1')
+        like = do_like(user.id, article.id)
+
+        # When
+        delete_an_article(article.id)                                     # 해당 글 id에 맞는 글 삭제 시
+
+        # Then
+        self.assertFalse(Article.objects.filter(id=article.id).exists())  # 해당 글 id에 맞는 글이 존재하는지(T) 아닌지(F) 검증
+        self.assertFalse(Like.objects.filter(id=like.id).exists())
+
+    def test_you_can_create_an_article(self) -> None:
+        # Given
+        title = 'test_title'
+
+        # When
+        article = create_an_article(title)
+
+        # Then
+        self.assertEqual(article.title, title)

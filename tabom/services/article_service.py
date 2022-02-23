@@ -5,6 +5,10 @@ from tabom.models.article import Article
 from tabom.models.like import Like
 
 
+def create_an_article(title: str) -> Article:
+    return Article.objects.create(title=title)
+
+
 def get_an_article(user_id: int, article_id: int) -> Article:
     return Article.objects.prefetch_related(
         Prefetch("like_set", queryset=Like.objects.filter(user_id=user_id), to_attr="my_likes")
@@ -24,6 +28,9 @@ def get_article_list(user_id: int, offset: int, limit: int) -> QuerySet[Article]
     # prefetch: 미리 가져오겠다!
     # Prefetch 객체를 사용(like_set을 가져오는데, user id에 해당하는 like의 쿼리셋을 들고오고, my_likes라는 필드 할당)
 
+
+def delete_an_article(article_id: int) -> None:
+    Article.objects.filter(id=article_id).delete()
 
 # paginator 사용
 # def get_article_page(page: int, limit: int) -> Page[Article]:
